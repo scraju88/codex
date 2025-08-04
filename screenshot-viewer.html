@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMR Assistant - Screenshot Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .screenshots-grid {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .screenshot-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+
+        .screenshot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .screenshot-card.stored {
+            border-color: #28a745;
+        }
+
+        .screenshot-card.skipped {
+            border-color: #ffc107;
+            opacity: 0.8;
+        }
+
+        .screenshot-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .screenshot-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .screenshot-info {
+            padding: 20px;
+        }
+
+        .screenshot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-stored {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-skipped {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .screenshot-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .screenshot-url {
+            font-size: 0.9em;
+            color: #667eea;
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+
+        .screenshot-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .meta-label {
+            font-weight: 600;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .modal-content {
+            position: relative;
+            margin: 5% auto;
+            padding: 0;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .modal-image {
+            width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            color: white;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .close:hover {
+            color: #ccc;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #dc3545;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .stats {
+                justify-content: center;
+            }
+            
+            .screenshots-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📸 EMR Assistant Screenshot Viewer</h1>
+            <p>Monitor stored and duplicate screenshots with change detection</p>
+        </div>
+
+        <div class="controls">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalStored">0</div>
+                    <div class="stat-label">Stored</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalSkipped">0</div>
+                    <div class="stat-label">Duplicates</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalScreenshots">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+            </div>
+            
+            <div>
+                <button class="btn btn-primary" onclick="refreshScreenshots()">🔄 Refresh</button>
+                <button class="btn btn-secondary" onclick="clearScreenshots()">🗑️ Clear All</button>
+                <button class="btn btn-success" onclick="toggleStored()">✅ Show Stored</button>
+                <button class="btn btn-warning" onclick="toggleSkipped()">⏭️ Show Duplicates</button>
+            </div>
+        </div>
+
+        <div id="screenshotsContainer">
+            <div class="loading">
+                <h3>Loading screenshots...</h3>
+                <p>Please wait while we fetch the latest data.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for enlarged images -->
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" class="modal-image" src="" alt="Screenshot">
+        </div>
+    </div>
+
+    <script>
+        let allScreenshots = [];
+        let showStored = true;
+        let showSkipped = true;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshScreenshots();
+            
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                const modal = document.getElementById('imageModal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+            
+            // Close modal with X button
+            document.querySelector('.close').onclick = function() {
+                document.getElementById('imageModal').style.display = 'none';
+            }
+        });
+
+        async function refreshScreenshots() {
+            const container = document.getElementById('screenshotsContainer');
+            container.innerHTML = '<div class="loading"><h3>Loading screenshots...</h3><p>Please wait while we fetch the latest data.</p></div>';
+
+            try {
+                const response = await fetch('https://emr-assistant-functions.azurewebsites.net/api/screenshots');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                allScreenshots = data.screenshots || [];
+                
+                updateStats(data);
+                renderScreenshots();
+                
+            } catch (error) {
+                console.error('Error fetching screenshots:', error);
+                container.innerHTML = `
+                    <div class="error">
+                        <h3>Error loading screenshots</h3>
+                        <p>${error.message}</p>
+                        <button class="btn btn-primary" onclick="refreshScreenshots()">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        function updateStats(data) {
+            document.getElementById('totalStored').textContent = data.total_stored || 0;
+            document.getElementById('totalSkipped').textContent = data.total_duplicates || 0;
+            document.getElementById('totalScreenshots').textContent = data.total || 0;
+        }
+
+        function renderScreenshots() {
+            const container = document.getElementById('screenshotsContainer');
+            
+            if (allScreenshots.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No screenshots found</h3>
+                        <p>Start capturing screenshots with the EMR Assistant extension to see them here.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const filteredScreenshots = allScreenshots.filter(screenshot => {
+                const isDuplicate = screenshot.is_duplicate || false;
+                const hasSignificantChange = screenshot.has_significant_change || false;
+                
+                // Show stored (non-duplicates) if showStored is true
+                if (hasSignificantChange && !showStored) return false;
+                // Show duplicates if showSkipped is true
+                if (isDuplicate && !showSkipped) return false;
+                return true;
+            });
+
+            if (filteredScreenshots.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No screenshots to display</h3>
+                        <p>Try adjusting the filter settings to see more screenshots.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'screenshots-grid';
+
+            filteredScreenshots.forEach(screenshot => {
+                const card = createScreenshotCard(screenshot);
+                grid.appendChild(card);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(grid);
+        }
+
+        function createScreenshotCard(screenshot) {
+            const card = document.createElement('div');
+            
+            // Determine status based on new fields
+            const isDuplicate = screenshot.is_duplicate || false;
+            const hasSignificantChange = screenshot.has_significant_change || false;
+            
+            let statusText, statusClass;
+            if (isDuplicate) {
+                statusText = 'DUPLICATE';
+                statusClass = 'status-skipped';
+                card.className = 'screenshot-card skipped';
+            } else {
+                statusText = 'STORED';
+                statusClass = 'status-stored';
+                card.className = 'screenshot-card stored';
+            }
+            
+            const timestamp = new Date(screenshot.timestamp).toLocaleString();
+            
+            // Use direct blob storage URL instead of Azure Function
+            const imageUrl = screenshot.blob_name ? 
+                `https://emrassistantstorage.blob.core.windows.net/screenshots/${screenshot.blob_name}` : null;
+            
+            card.innerHTML = `
+                <div class="screenshot-image">
+                    ${imageUrl ? 
+                        `<img src="${imageUrl}" alt="Screenshot" onclick="openImage('${imageUrl}', '${screenshot.title}')" onerror="this.parentElement.innerHTML='<div>Image not available</div>'">` :
+                        `<div>Image not available</div>`
+                    }
+                </div>
+                <div class="screenshot-info">
+                    <div class="screenshot-header">
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                        <small>${timestamp}</small>
+                    </div>
+                    <div class="screenshot-title">${screenshot.title || 'Untitled'}</div>
+                    <div class="screenshot-url">${screenshot.url || 'No URL'}</div>
+                    <div class="screenshot-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">ID:</span>
+                            <span>${screenshot.id}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Size:</span>
+                            <span>${formatBytes(screenshot.size)}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Quality:</span>
+                            <span>${Math.round(screenshot.quality * 100)}%</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Change Detected:</span>
+                            <span>${hasSignificantChange ? 'Yes' : 'No'}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Is Duplicate:</span>
+                            <span>${isDuplicate ? 'Yes' : 'No'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function openImage(imageSrc, title) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = 'block';
+            modalImg.src = imageSrc;
+            modalImg.alt = title;
+        }
+
+        function clearScreenshots() {
+            if (confirm('Are you sure you want to clear all screenshots? This action cannot be undone.')) {
+                // This would need a clear endpoint on the server
+                alert('Clear functionality would need to be implemented on the server side.');
+            }
+        }
+
+        function toggleStored() {
+            showStored = !showStored;
+            renderScreenshots();
+        }
+
+        function toggleSkipped() {
+            showSkipped = !showSkipped;
+            renderScreenshots();
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html> 

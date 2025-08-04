@@ -1,0 +1,7 @@
+azure-functions==1.17.0
+azure-storage-blob==12.19.0
+azure-cosmos==4.5.1
+Pillow==10.0.0
+numpy==1.24.3
+python-dotenv==1.0.0
+requests==2.31.0 

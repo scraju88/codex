@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "EMR Assistant",
+  "version": "1.0.0",
+  "description": "AI-powered medical documentation assistant for EMR workflows",
+  
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  
+  "host_permissions": [
+    "https://emr-assistant-functions.azurewebsites.net/*",
+    "https://your-server.com/*",
+    "http://localhost:5000/*"
+  ],
+  
+  "background": {
+    "service_worker": "background/background.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/content.js"]
+    }
+  ],
+  
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "EMR Assistant"
+  },
+  
+  "options_page": "options/options.html"
+} 

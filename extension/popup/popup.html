@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>EMR Assistant</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏥 EMR Assistant</h1>
+            <p>AI-powered medical documentation</p>
+        </header>
+        
+        <div class="controls">
+            <button id="captureBtn" class="btn primary">
+                📸 Start Capture
+            </button>
+        </div>
+        
+        <div class="status">
+            <div id="statusText" class="status-text">Ready to capture</div>
+            <div id="progressBar" class="progress-bar hidden">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-label">Screenshots:</span>
+                <span id="screenshotCount" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">In Memory:</span>
+                <span id="memoryCount" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Upload Queue:</span>
+                <span id="uploadQueueSize" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Server:</span>
+                <span id="serverStatus" class="stat-value">Connected</span>
+            </div>
+            <div class="stat-item" id="lastCaptureItem" style="display: none;">
+                <span class="stat-label">Last Capture:</span>
+                <span id="lastCaptureTime" class="stat-value">-</span>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button id="settingsBtn" class="btn small">⚙️ Settings</button>
+            <button id="helpBtn" class="btn small">❓ Help</button>
+        </div>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html> 
