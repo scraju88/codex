@@ -151,25 +151,26 @@ def detect_significant_change(current_hash: str, previous_hashes: List[str]) -> 
         logger.info("No previous hashes found - first screenshot")
         return True  # First screenshot always has "change"
     
-    logger.info(f"Comparing current hash with {len(previous_hashes)} previous hashes")
+    logger.info(f"Comparing current hash with previous screenshot")
     
     # Use a lower threshold for more sensitive detection
     threshold = CHANGE_DETECTION_THRESHOLD * 0.5
     
-    # Compare with last few screenshots
-    for i, prev_hash in enumerate(previous_hashes[-3:]):  # Check last 3 screenshots
-        if not prev_hash:  # Skip empty hashes
-            continue
-            
-        difference = calculate_hash_difference(current_hash, prev_hash)
-        logger.info(f"Multi-scale difference to previous hash {i}: {difference:.2f} (threshold: {threshold:.2f})")
+    # Compare with the most recent screenshot only
+    prev_hash = previous_hashes[0]  # Get the most recent screenshot
+    if not prev_hash:  # Skip empty hashes
+        logger.info("Previous hash is empty, considering as significant change")
+        return True
         
-        # If current screenshot is similar to ANY of the last 3, it's a duplicate
-        if difference <= threshold:
-            logger.info(f"Duplicate detected - difference {difference:.2f} <= threshold {threshold:.2f}")
-            return False  # No significant change (it's a duplicate)
+    difference = calculate_hash_difference(current_hash, prev_hash)
+    logger.info(f"Multi-scale difference to previous screenshot: {difference:.2f} (threshold: {threshold:.2f})")
     
-    logger.info("Significant change detected - different from all previous screenshots")
+    # If current screenshot is similar to the previous one, it's a duplicate
+    if difference <= threshold:
+        logger.info(f"Duplicate detected - difference {difference:.2f} <= threshold {threshold:.2f}")
+        return False  # No significant change (it's a duplicate)
+    
+    logger.info("Significant change detected - different from previous screenshot")
     return True  # Significant change (not a duplicate)
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
