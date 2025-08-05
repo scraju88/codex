@@ -199,13 +199,34 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             'blob_name': blob_name,
             'perceptual_hash': current_hash,
             'has_significant_change': has_significant_change,
-            'is_duplicate': not has_significant_change  # Mark as duplicate if no significant change
+            'is_duplicate': not has_significant_change,  # Mark as duplicate if no significant change
+            'ocr_status': 'pending'  # Add OCR status field
         }
         
         container.upsert_item(screenshot_doc)
         
         # Cleanup old screenshots to maintain FIFO
         cleanup_old_screenshots()
+        
+        # Trigger OCR processing for non-duplicate screenshots
+        if has_significant_change and not screenshot_doc['is_duplicate']:
+            try:
+                # Call OCR processor asynchronously
+                ocr_url = f"https://{function_app_name}.azurewebsites.net/api/ocr-processor"
+                ocr_payload = {
+                    'screenshot_id': screenshot_id,
+                    'blob_name': blob_name
+                }
+                
+                # Fire-and-forget OCR call (non-blocking)
+                requests.post(ocr_url, json=ocr_payload, timeout=1)
+                logger.info(f"Triggered OCR processing for screenshot: {screenshot_id}")
+                
+            except Exception as e:
+                logger.error(f"Failed to trigger OCR processing: {str(e)}")
+                # Don't fail the upload if OCR trigger fails
+        else:
+            logger.info(f"Skipping OCR for duplicate screenshot: {screenshot_id}")
         
         logger.info(f"Screenshot uploaded successfully: {screenshot_id}")
         logger.info(f"Has significant change: {has_significant_change}")
